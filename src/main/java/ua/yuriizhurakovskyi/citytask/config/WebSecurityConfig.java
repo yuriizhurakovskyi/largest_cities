@@ -18,49 +18,52 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import ua.yuriizhurakovskyi.citytask.service.UserServiceImpl;
 
+
 @Configuration
 @EnableWebSecurity
 @ComponentScan(basePackageClasses = UserServiceImpl.class)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
-	private final UserDetailsService userDetailsService;
+    private final UserDetailsService userDetailsService;
 
-	@Autowired
-	public WebSecurityConfig(@Qualifier("userServiceImpl") UserDetailsService userDetailsService) {
-		this.userDetailsService = userDetailsService;
-	}
+    @Autowired
+    public WebSecurityConfig(@Qualifier("userServiceImpl") UserDetailsService userDetailsService) {
+        this.userDetailsService = userDetailsService;
+    }
 
-	@Bean
-	public PasswordEncoder passwordEncoder() {
-		return new BCryptPasswordEncoder();
-	}
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
-	@Bean
-	public DaoAuthenticationProvider authenticationProvider() {
-		DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-		provider.setUserDetailsService(userDetailsService);
-		provider.setPasswordEncoder(passwordEncoder());
-		return provider;
-	}
+    @Bean
+    public DaoAuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder());
+        return provider;
+    }
 
-//	@Override
-//	protected void configure(HttpSecurity http) throws Exception {
-//		http.csrf().disable().authorizeRequests().antMatchers("/", "/saveUser").permitAll().anyRequest().authenticated()
-//				.antMatchers("/admin/**").hasRole("ADMIN").and().formLogin().loginPage("/login")
-//				.successForwardUrl("/successURL").failureUrl("/login?error").permitAll().and().exceptionHandling()
-//				.accessDeniedPage("/403").and().logout().logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
-//				.logoutSuccessUrl("/").permitAll();
-//	}
+	@Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http.csrf().disable().authorizeRequests().antMatchers("/", "/saveUser").permitAll()
+                .antMatchers("/admin/**").hasRole("ADMIN").and().formLogin().loginPage("/login")
+                .successForwardUrl("/successURL").failureUrl("/login?error").permitAll().and().exceptionHandling()
+                .accessDeniedPage("/403").and().logout().logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
+                .logoutSuccessUrl("/").permitAll()
+                .and()
+                .authorizeRequests().antMatchers("/successURL").hasAnyRole().anyRequest().authenticated();
+    }
 
-	private InMemoryUserDetailsManagerConfigurer<AuthenticationManagerBuilder> inMemoryConfigurer() {
-		return new InMemoryUserDetailsManagerConfigurer<AuthenticationManagerBuilder>();
-	}
+    private InMemoryUserDetailsManagerConfigurer<AuthenticationManagerBuilder> inMemoryConfigurer() {
+        return new InMemoryUserDetailsManagerConfigurer<AuthenticationManagerBuilder>();
+    }
 
-	@Autowired
-	public void configureGlobal(AuthenticationManagerBuilder auth, AuthenticationProvider provider) throws Exception {
-		inMemoryConfigurer().withUser("admin").password("{noop}admin").authorities("ADMIN").and().configure(auth);
-		auth.authenticationProvider(provider);
+    @Autowired
+    public void configureGlobal(AuthenticationManagerBuilder auth, AuthenticationProvider provider) throws Exception {
+        inMemoryConfigurer().withUser("admin").password("{noop}admin").authorities("ADMIN").and().configure(auth);
+        auth.authenticationProvider(provider);
 
-	}
+    }
 
 }

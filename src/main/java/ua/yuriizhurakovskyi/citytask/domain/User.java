@@ -26,7 +26,7 @@ public class User implements UserDetails {
     private boolean credentialsNonExpired = true;
     private boolean enabled = true;
     @Enumerated(EnumType.STRING)
-    private Role role = Role.ROLE_USER;
+    private Role role = Role.ROLE_ADMIN;
     private boolean accountNonLocked = true;
 
     @Override
